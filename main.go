@@ -53,6 +53,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/qor/admin"
@@ -67,18 +68,20 @@ type User struct {
 }
 
 type Staff struct {
-	gorm.Model
-	Name           string
-	Birthday       time.Time
-	IsActor        bool
-	IsProducer     bool
-	IsDirector     bool
-	IsScreenWriter bool
+	gorm.Model     `json:"-"` //TODO нужен id, остальные поля не нужны
+	Name           string     `json:"name"`
+	Birthday       time.Time  `json:"birthday"`
+	IsActor        bool       `json:"isActor"`
+	IsProducer     bool       `json:"isProducer"`
+	IsDirector     bool       `json:"isDirector"`
+	IsScreenWriter bool       `json:"isScreenWriter"`
 }
 
 func main() {
 	DB, _ := gorm.Open("sqlite3", "demo.db")
 	DB.AutoMigrate(&User{}, &Staff{})
+
+	go public(DB)
 
 	// Initalize
 	//Admin := admin.New(&admin.AdminConfig{DB: DB})
@@ -96,4 +99,27 @@ func main() {
 
 	fmt.Println("Listening on: 9000")
 	http.ListenAndServe(":9000", mux)
+}
+
+func public(DB *gorm.DB) {
+	r := gin.Default()
+
+	// Ping test
+	r.GET("/ping", func(c *gin.Context) {
+		c.String(http.StatusNoContent, "pong")
+	})
+
+	r.GET("/staff", func(c *gin.Context) {
+		var staffCollection []Staff //TODO search string from get parameter
+		//DB.Select("name")
+		DB.Where("name LIKE ?", "%Arnold%").Find(&staffCollection)
+		fmt.Println(staffCollection)
+		for _, staff := range staffCollection {
+			fmt.Println(staff)
+		}
+
+		c.JSON(http.StatusOK, staffCollection)
+	})
+
+	r.Run(":8080")
 }
