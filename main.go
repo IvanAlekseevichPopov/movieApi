@@ -68,7 +68,10 @@ type User struct {
 }
 
 type Staff struct {
-	gorm.Model     `json:"-"` //TODO нужен id, остальные поля не нужны
+	ID             uint       `gorm:"primary_key" json:"id"`
+	CreatedAt      time.Time  `json:"-"`
+	UpdatedAt      time.Time  `json:"-"`
+	DeletedAt      *time.Time `sql:"index" json:"-"`
 	Name           string     `json:"name"`
 	Birthday       time.Time  `json:"birthday"`
 	IsActor        bool       `json:"isActor"`
