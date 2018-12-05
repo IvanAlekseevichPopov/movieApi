@@ -1,54 +1,3 @@
-//package main
-//
-//import (
-//	"fmt"
-//	"net/http"
-//
-//	"github.com/gin-gonic/gin"
-//	"github.com/jinzhu/gorm"
-//	_ "github.com/jinzhu/gorm/dialects/sqlite"
-//)
-//
-//
-//type Person struct {
-//	ID uint
-//	FirstName string
-//	LastName string
-//}
-//
-//var db *gorm.DB
-//
-//func setupRouter() *gin.Engine {
-//	r := gin.Default()
-//
-//	// Ping test
-//	r.GET("/ping", func(c *gin.Context) {
-//		c.String(http.StatusNoContent, "pong")
-//	})
-//
-//	r.GET("/tst", func(c *gin.Context) {
-//		var user Person
-//		db.First(user)
-//		fmt.Println(db)
-//		c.JSON(http.StatusOK, gin.H{"user": "user"})
-//	})
-//
-//
-//	return r
-//}
-//
-//func main() {
-//	db, _ = gorm.Open("sqlite3", "./gorm.db")
-//	db.AutoMigrate(&Person{})
-//	p1 := Person{FirstName: "John", LastName: "Doe"}
-//	db.Create(&p1)
-//	defer db.Close()
-//
-//	r := setupRouter()
-//	// Listen and Server in 0.0.0.0:8080
-//	r.Run(":8080")
-//}
-
 package main
 
 import (
@@ -83,6 +32,7 @@ type Staff struct {
 func main() {
 	DB, _ := gorm.Open("sqlite3", "demo.db")
 	DB.AutoMigrate(&User{}, &Staff{})
+	DB.LogMode(true) //TOOD remove for prod
 
 	go public(DB)
 
@@ -107,17 +57,13 @@ func main() {
 func public(DB *gorm.DB) {
 	r := gin.Default()
 
-	// Ping test
-	r.GET("/ping", func(c *gin.Context) {
-		c.String(http.StatusNoContent, "pong")
-	})
-
 	r.GET("/staff", func(c *gin.Context) {
+		fmt.Println(c.Request.URL.Query())
 		name := c.Query("name")
 		fmt.Println(name)
 
 		var staffCollection []Staff
-		DB.Where("name LIKE ?", name).Find(&staffCollection) //TODO like with %, parameter validation
+		DB.Where("name LIKE ?", "%"+name+"%").Find(&staffCollection)
 		fmt.Println(staffCollection)
 
 		c.JSON(http.StatusOK, staffCollection)
