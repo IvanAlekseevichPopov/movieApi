@@ -113,13 +113,12 @@ func public(DB *gorm.DB) {
 	})
 
 	r.GET("/staff", func(c *gin.Context) {
-		var staffCollection []Staff //TODO search string from get parameter
-		//DB.Select("name")
-		DB.Where("name LIKE ?", "%Arnold%").Find(&staffCollection)
+		name := c.Query("name")
+		fmt.Println(name)
+
+		var staffCollection []Staff
+		DB.Where("name LIKE ?", name).Find(&staffCollection) //TODO like with %, parameter validation
 		fmt.Println(staffCollection)
-		for _, staff := range staffCollection {
-			fmt.Println(staff)
-		}
 
 		c.JSON(http.StatusOK, staffCollection)
 	})
