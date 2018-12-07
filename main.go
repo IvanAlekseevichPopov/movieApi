@@ -32,7 +32,7 @@ type Staff struct {
 func main() {
 	DB, _ := gorm.Open("sqlite3", "demo.db")
 	DB.AutoMigrate(&User{}, &Staff{})
-	DB.LogMode(true) //TOOD remove for prod
+	DB.LogMode(true) //TODO remove for prod
 
 	go public(DB)
 
