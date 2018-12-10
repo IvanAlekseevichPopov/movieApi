@@ -1,4 +1,4 @@
 # Created by .ignore support plugin (hsz.mobi)
 /demo.db
-/vendor/github.com/
-/vendor/golang.org/
+!/vendor/vendor.json
+/vendor/

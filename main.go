@@ -2,11 +2,13 @@ package main
 
 import (
 	"fmt"
+	"github.com/IvanAlekseevichPopov/framework/config"
+	"github.com/IvanAlekseevichPopov/framework/config/db"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/qor/admin"
-	"github.com/qor/qor"
+	"log"
 	"net/http"
 	"time"
 )
@@ -30,15 +32,33 @@ type Staff struct {
 }
 
 func main() {
-	DB, _ := gorm.Open("sqlite3", "demo.db")
-	DB.AutoMigrate(&User{}, &Staff{})
-	DB.LogMode(true) //TODO remove for prod
+	db.Conn.AutoMigrate(User{}, Staff{})
 
-	go public(DB)
+	go api()
+	adminPanel()
+}
 
+func api() {
+	r := gin.Default()
+
+	r.GET("/staff", func(c *gin.Context) {
+		fmt.Println(c.Request.URL.Query())
+		name := c.Query("name")
+		fmt.Println(name)
+
+		var staffCollection []Staff
+		db.Conn.Where("name LIKE ?", "%"+name+"%").Find(&staffCollection)
+		fmt.Println(staffCollection)
+
+		c.JSON(http.StatusOK, staffCollection)
+	})
+
+	r.Run(":8080") //TODO all on one port
+}
+
+func adminPanel() {
 	// Initalize
-	//Admin := admin.New(&admin.AdminConfig{DB: DB})
-	Admin := admin.New(&qor.Config{DB: DB})
+	Admin := admin.New(&admin.AdminConfig{DB: db.Conn})
 
 	// Allow to use Admin to manage User, Product
 	Admin.AddResource(&User{})
@@ -50,24 +70,6 @@ func main() {
 	// Mount admin interface to mux
 	Admin.MountTo("/admin", mux)
 
-	fmt.Println("Listening on: 9000")
-	http.ListenAndServe(":9000", mux)
-}
-
-func public(DB *gorm.DB) {
-	r := gin.Default()
-
-	r.GET("/staff", func(c *gin.Context) {
-		fmt.Println(c.Request.URL.Query())
-		name := c.Query("name")
-		fmt.Println(name)
-
-		var staffCollection []Staff
-		DB.Where("name LIKE ?", "%"+name+"%").Find(&staffCollection)
-		fmt.Println(staffCollection)
-
-		c.JSON(http.StatusOK, staffCollection)
-	})
-
-	r.Run(":8080")
+	log.Printf("Listening on%s", config.Config.Port)
+	http.ListenAndServe(config.Config.Port, mux)
 }
