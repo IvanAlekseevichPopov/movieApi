@@ -32,16 +32,22 @@ type Staff struct {
 }
 
 func main() {
-	db.Conn.AutoMigrate(User{}, Staff{})
+	db.Conn.AutoMigrate(User{}, Staff{}) //TODO only separate migrations
 
-	go api()
-	adminPanel()
+	// initalize an HTTP request multiplexer
+	mux := http.NewServeMux()
+
+	api(mux)
+	adminPanel(mux)
+
+	log.Printf("Listening on%s", config.Config.Port)
+	http.ListenAndServe(config.Config.Port, mux)
 }
 
-func api() {
-	r := gin.Default()
+func api(mux *http.ServeMux) {
+	router := gin.Default()
 
-	r.GET("/staff", func(c *gin.Context) {
+	router.GET("/api/staff", func(c *gin.Context) {
 		fmt.Println(c.Request.URL.Query())
 		name := c.Query("name")
 		fmt.Println(name)
@@ -50,13 +56,20 @@ func api() {
 		db.Conn.Where("name LIKE ?", "%"+name+"%").Find(&staffCollection)
 		fmt.Println(staffCollection)
 
-		c.JSON(http.StatusOK, staffCollection)
+		if len(staffCollection) == 0 {
+			c.JSON(http.StatusNotFound, gin.H{}) //TODO формат ответов
+			//TODO проверка черных списков
+			//TODO Запуск поиска по ресурсам
+		} else {
+			c.JSON(http.StatusOK, staffCollection)
+		}
+
 	})
 
-	r.Run(":8080") //TODO all on one port
+	mux.Handle("/api/staff", router) //TODO забиндить все маршруты /api*
 }
 
-func adminPanel() {
+func adminPanel(mux *http.ServeMux) {
 	// Initalize
 	Admin := admin.New(&admin.AdminConfig{DB: db.Conn})
 
@@ -64,12 +77,6 @@ func adminPanel() {
 	Admin.AddResource(&User{})
 	Admin.AddResource(&Staff{})
 
-	// initalize an HTTP request multiplexer
-	mux := http.NewServeMux()
-
 	// Mount admin interface to mux
 	Admin.MountTo("/admin", mux)
-
-	log.Printf("Listening on%s", config.Config.Port)
-	http.ListenAndServe(config.Config.Port, mux)
 }
