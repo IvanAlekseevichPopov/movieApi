@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"github.com/IvanAlekseevichPopov/framework/config"
-	"github.com/IvanAlekseevichPopov/framework/config/db"
+	"github.com/IvanAlekseevichPopov/movieApi/config"
+	"github.com/IvanAlekseevichPopov/movieApi/config/db"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 	_ "github.com/mattn/go-sqlite3"
