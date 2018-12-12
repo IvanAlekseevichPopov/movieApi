@@ -73,6 +73,12 @@
 			"revisionTime": "2018-10-12T15:35:48Z"
 		},
 		{
+			"checksumSHA1": "6gZhzzBcr6PGzBonQfvkYl+4YqY=",
+			"path": "github.com/gorilla/mux",
+			"revision": "08e7f807d38d6a870193019bb439056118661505",
+			"revisionTime": "2019-01-08T14:29:30Z"
+		},
+		{
 			"checksumSHA1": "NScdwrIOpSH9hoP7i3a6JGmE5rw=",
 			"path": "github.com/gorilla/securecookie",
 			"revision": "e65cf8c5df817c89aeb47ecb46064e802e2de943",
@@ -408,5 +414,5 @@
 			"revisionTime": "2018-11-15T11:05:04Z"
 		}
 	],
-	"rootPath": "/github.com/IvanAlekseevichPopov/movieApi"
+	"rootPath": "github.com/IvanAlekseevichPopov/movieApi"
 }

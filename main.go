@@ -5,6 +5,7 @@ import (
 	"github.com/IvanAlekseevichPopov/movieApi/config"
 	"github.com/IvanAlekseevichPopov/movieApi/config/db"
 	"github.com/gin-gonic/gin"
+	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/qor/admin"
@@ -33,21 +34,19 @@ type Staff struct {
 
 func main() {
 	db.Conn.AutoMigrate(User{}, Staff{}) //TODO only separate migrations
+	r := mux.NewRouter()
 
-	// initalize an HTTP request multiplexer
-	mux := http.NewServeMux()
-
-	api(mux)
-	adminPanel(mux)
+	api(r)
+	adminPanel(r)
 
 	log.Printf("Listening on%s", config.Config.Port)
-	http.ListenAndServe(config.Config.Port, mux)
+	http.ListenAndServe(config.Config.Port, r)
 }
 
-func api(mux *http.ServeMux) {
-	router := gin.Default()
+func api(mrouter *mux.Router) {
+	grouter := gin.Default()
 
-	router.GET("/api/staff", func(c *gin.Context) {
+	grouter.GET("/api/staff", func(c *gin.Context) {
 		fmt.Println(c.Request.URL.Query())
 		name := c.Query("name")
 		fmt.Println(name)
@@ -66,10 +65,10 @@ func api(mux *http.ServeMux) {
 
 	})
 
-	mux.Handle("/api/staff", router) //TODO забиндить все маршруты /api*
+	mrouter.PathPrefix("/api").Handler(grouter)
 }
 
-func adminPanel(mux *http.ServeMux) {
+func adminPanel(mrouter *mux.Router) {
 	// Initalize
 	Admin := admin.New(&admin.AdminConfig{DB: db.Conn})
 
@@ -77,6 +76,9 @@ func adminPanel(mux *http.ServeMux) {
 	Admin.AddResource(&User{})
 	Admin.AddResource(&Staff{})
 
+	server := http.NewServeMux()
+	mrouter.PathPrefix("/admin").Handler(server)
+
 	// Mount admin interface to mux
-	Admin.MountTo("/admin", mux)
+	Admin.MountTo("/admin", server)
 }
