@@ -14,6 +14,7 @@ func NewAdmin(router *mux.Router, route string) {
 	// Allow to use Admin to manage User, Product
 	Admin.AddResource(&entity.User{})
 	Admin.AddResource(&entity.Staff{})
+	Admin.AddResource(&entity.Movie{})
 
 	server := http.NewServeMux()
 	router.PathPrefix(route).Handler(server)

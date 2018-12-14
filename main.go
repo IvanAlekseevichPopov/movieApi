@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	db.Conn.AutoMigrate(entity.User{}, entity.Staff{}) //TODO only separate migrations
+	db.Conn.AutoMigrate(entity.User{}, entity.Staff{}, entity.Movie{}) //TODO only separate migrations
 	router := mux.NewRouter()
 
 	controller.NewApi(router, "/api")
